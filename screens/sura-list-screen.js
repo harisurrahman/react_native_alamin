@@ -6,24 +6,80 @@ import {
   FlatList,
   Text,
   SafeAreaView,
+  TouchableOpacity,
 } from "react-native";
+import SoundPlayer from "react-native-sound-player";
 import surasList from "../model/model-sura-list";
-
+import { dowloadFile } from "../utility/file_operation";
+import * as FileSystem from "expo-file-system";
 const suras = surasList();
-const Sura = ({ originalName }) => (
-  <View style={styles.item}>
-    <View style={styles.leftItem}>
-      <Image source={require("../assets/kaba.png")} />
+const reciter = "Abu-Bakr-Ash-Shaatree";
+const Sura = ({ sid, originalName, revelationType, numberOfAyets }) => (
+  <TouchableOpacity
+    onPress={() => {
+      SoundPlayer.loadUrl(
+        `${FileSystem.documentDirectory}${reciter}/028039.mp3`
+      );
+      SoundPlayer.play();
+    }}
+  >
+    <View style={styles.item}>
+      <View style={styles.leftItem}>
+        <Image source={revelationType} />
+      </View>
+      <Text style={styles.centerItem}>{originalName}</Text>
+      <View style={styles.rightItem}>
+        <Text style={{ color: "white", fontWeight: "bold" }}>
+          {numberOfAyets}
+        </Text>
+      </View>
     </View>
-    <Text style={styles.centerItem}>{originalName}</Text>
-    <View style={styles.leftItem}></View>
-  </View>
+  </TouchableOpacity>
 );
+
 const SuraScreen = () => {
-  const renderItem = ({ item }) => <Sura originalName={item.originalName} />;
+  React.useEffect(() => {
+    _onFinishedPlayingSubscription = SoundPlayer.addEventListener(
+      "FinishedPlaying",
+      ({ success }) => {
+        console.log("finished playing", success);
+      }
+    );
+    _onFinishedLoadingSubscription = SoundPlayer.addEventListener(
+      "FinishedLoading",
+      ({ success }) => {
+        console.log("finished loading", success);
+      }
+    );
+    _onFinishedLoadingFileSubscription = SoundPlayer.addEventListener(
+      "FinishedLoadingFile",
+      ({ success, name, type }) => {
+        console.log("finished loading file", success, name, type);
+      }
+    );
+    _onFinishedLoadingURLSubscription = SoundPlayer.addEventListener(
+      "FinishedLoadingURL",
+      ({ success, url }) => {
+        console.log("finished loading url", success, url);
+      }
+    );
+  }, []);
+
+  const renderItem = ({ item }) => (
+    <Sura
+      sid={item.sid}
+      originalName={item.originalName}
+      revelationType={
+        item.revelationType == "Meccan"
+          ? require("../assets/kaba.png")
+          : require("../assets/madina.png")
+      }
+      numberOfAyets={item.numberOfAyets}
+    />
+  );
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ flex: 0, backgroundColor: "rgb(124, 124, 247)" }}>
       <View style={styles.container}>
         <FlatList
           data={suras}
@@ -53,7 +109,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
-    borderColor: "black",
+  },
+  rightItem: {
+    width: 50,
+    height: 50,
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 16,
+    color: "white",
+    borderRadius: 25,
+    backgroundColor: "rgb(124, 124, 247)",
   },
   centerItem: {
     paddingLeft: 10,

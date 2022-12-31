@@ -1,9 +1,11 @@
 import * as React from "react";
-import { Button, View, Text } from "react-native";
+import { Button, View, Text, Image } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import SuraScreen from "./screens/sura-list-screen";
+import * as FileSystem from "expo-file-system";
+import { createDirectory } from "./utility/file_operation";
 
 const Tab = createBottomTabNavigator();
 
@@ -12,7 +14,6 @@ function MyTabs() {
     <Tab.Navigator
       screenOptions={{
         tabBarInactiveTintColor: "rgba(255, 255, 255, 0.5)",
-        tabBarActiveTintColor: "pink",
         tabBarShowLabel: false,
         tabBarStyle: {
           paddingTop: 10,
@@ -21,13 +22,16 @@ function MyTabs() {
       }}
     >
       <Tab.Screen
-        name="Home"
+        name="SuraList"
         component={SuraScreen}
         options={{
           tabBarLabel: "Home",
+          headerStyle: {
+            backgroundColor: "rgb(124, 124, 247)",
+          },
           tabBarIcon: ({ focused, color, size }) => (
             <MaterialCommunityIcons
-              name={focused ? "home" : "home-outline"}
+              name={focused ? "view-list" : "view-list-outline"}
               color={{ color }}
               size={size}
             />
@@ -53,11 +57,23 @@ function MyTabs() {
   );
 }
 
+const fileExists = async () => {
+  const uri = FileSystem.documentDirectory + "/images/about-jainasoft.png";
+  let tmp = await FileSystem.getInfoAsync(uri);
+  console.log(tmp);
+};
+
+const readFile = () => {
+  return FileSystem.documentDirectory + "about-jainasoft.png";
+};
+
 function DetailsScreen({ navigation }) {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
       <Text>Details Screen</Text>
-      <Button title="Go to Home" onPress={() => navigation.navigate("Home")} />
+
+      <Image source={{ uri: readFile() }} style={{ width: 100, height: 100 }} />
+      <Button title="Go to Home" onPress={() => createDirectory()} />
     </View>
   );
 }
